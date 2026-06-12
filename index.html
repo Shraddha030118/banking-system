@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Management System - DBMS Console</title>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="brand-name">ApexBank DBMS</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-section="tables">
+                    <i class="fas fa-database"></i>
+                    <span>Database Tables</span>
+                </li>
+                <li class="nav-item" data-section="queries">
+                    <i class="fas fa-terminal"></i>
+                    <span>Query Hub</span>
+                </li>
+                <li class="nav-item" data-section="procedures">
+                    <i class="fas fa-cogs"></i>
+                    <span>Procedures & Triggers</span>
+                </li>
+                <li class="nav-item" data-section="terminal">
+                    <i class="fas fa-code"></i>
+                    <span>SQL Console</span>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="db-status">
+                    <div class="status-dot"></div>
+                    <span>DBMS Local Simulator</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Topbar Header -->
+            <header class="topbar">
+                <div class="page-title">Banking DBMS Console</div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="reset-db-btn">
+                        <i class="fas fa-sync-alt"></i> Reset Database
+                    </button>
+                </div>
+            </header>
+
+            <!-- View Scroll Container -->
+            <div class="view-container">
+
+                <!-- VIEW 1: DASHBOARD -->
+                <section class="view-section active" id="dashboard">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="glass-card stat-card blue">
+                            <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-label">Total Assets</span>
+                                <span class="stat-value" id="stat-total-deposits">₹0.00</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card cyan">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-label">Total Customers</span>
+                                <span class="stat-value" id="stat-customers">0</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card purple">
+                            <div class="stat-icon"><i class="fas fa-piggy-bank"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-label">Active Accounts</span>
+                                <span class="stat-value" id="stat-accounts">0</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card emerald">
+                            <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-label">Approved Loans</span>
+                                <span class="stat-value" id="stat-loans">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="glass-card chart-card">
+                            <div class="card-title">Deposits Distribution per Branch</div>
+                            <div class="chart-wrapper">
+                                <canvas id="depositChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card chart-card">
+                            <div class="card-title">Loan Distribution Status</div>
+                            <div class="chart-wrapper">
+                                <canvas id="loanChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Executions Panel -->
+                    <div class="glass-card">
+                        <div class="card-title">
+                            <span>Recent SQL Commands</span>
+                            <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Live activity feed</span>
+                        </div>
+                        <div class="recent-logs-dashboard" id="recent-logs-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: DATABASE VIEWER -->
+                <section class="view-section" id="tables">
+                    <div class="db-tabs" id="db-tabs">
+                        <button class="tab-btn active" data-table="Customer">Customer</button>
+                        <button class="tab-btn" data-table="Branch">Branch</button>
+                        <button class="tab-btn" data-table="Account">Account</button>
+                        <button class="tab-btn" data-table="Transaction">Transaction</button>
+                        <button class="tab-btn" data-table="Loan">Loan</button>
+                        <button class="tab-btn" data-table="Employee">Employee</button>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="table-header-row">
+                            <div class="card-title" style="margin-bottom:0;">
+                                <span>Table: <span id="selected-table-name" style="color: var(--accent-cyan);">Customer</span></span>
+                            </div>
+                            <div class="action-buttons" style="align-items: center;">
+                                <div class="search-input-wrapper">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" class="search-input" id="table-search" placeholder="Search table...">
+                                </div>
+                                <button class="btn btn-primary" id="add-row-btn">
+                                    <i class="fas fa-plus"></i> Add Record
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="db-table">
+                                <thead>
+                                    <tr id="table-header">
+                                        <!-- Populated dynamically -->
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: QUERY HUB -->
+                <section class="view-section" id="queries">
+                    <div class="query-hub-container">
+                        <!-- Query Selection Sidebar -->
+                        <div class="glass-card query-list">
+                            <div class="card-title" style="margin-bottom:12px;">Query Portfolio</div>
+                            
+                            <div class="query-card active" data-index="1">
+                                <div class="query-badge">Q1</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Retrieve Customers</div>
+                                    <div class="query-desc">Basic SELECT query</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="2">
+                                <div class="query-badge">Q2</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">High Balance Accounts</div>
+                                    <div class="query-desc">WHERE balance > 50,000</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="3">
+                                <div class="query-badge">Q3</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Transactions & Accounts</div>
+                                    <div class="query-desc">2-table INNER JOIN</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="4">
+                                <div class="query-badge">Q4</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Customer, Account & Branch</div>
+                                    <div class="query-desc">3-table INNER JOIN</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="5">
+                                <div class="query-badge">Q5</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Accounts per Branch</div>
+                                    <div class="query-desc">GROUP BY branch_id</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="6">
+                                <div class="query-badge">Q6</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">High Deposit Branches</div>
+                                    <div class="query-desc">GROUP BY + HAVING balance sum</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="7">
+                                <div class="query-badge">Q7</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Above Average Balance</div>
+                                    <div class="query-desc">Subquery matching average</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="8">
+                                <div class="query-badge">Q8</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">High Transaction Users</div>
+                                    <div class="query-desc">Correlated Subquery relative limits</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="9">
+                                <div class="query-badge">Q9</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">All Customers & Accounts</div>
+                                    <div class="query-desc">LEFT JOIN layout</div>
+                                </div>
+                            </div>
+                            
+                            <div class="query-card" data-index="10">
+                                <div class="query-badge">Q10</div>
+                                <div class="query-card-text">
+                                    <div class="query-title">Inactive Accounts</div>
+                                    <div class="query-desc">NOT EXISTS check on Transactions</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Query Execution and Output View -->
+                        <div class="glass-card query-display-card" id="query-display-area">
+                            <div class="no-query-placeholder">
+                                <i class="fas fa-terminal"></i>
+                                <span>Select a query from the portfolio to execute and view details.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: PROCEDURES & TRIGGERS -->
+                <section class="view-section" id="procedures">
+                    <div class="proc-triggers-grid">
+                        
+                        <!-- Procedures Panel -->
+                        <div class="proc-section">
+                            
+                            <!-- Procedure 1 Card -->
+                            <div class="glass-card">
+                                <div class="card-title">
+                                    <span>Procedure: Transfer Funds</span>
+                                    <span class="query-badge" style="background:rgba(139, 92, 246,0.15); color:var(--accent-purple);">STORED PROC</span>
+                                </div>
+                                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px; line-height: 1.4;">
+                                    Executes atomic balance transfer between two accounts: subtracts from source and adds to destination.
+                                </p>
+                                
+                                <form id="procedure-transfer-form">
+                                    <div class="form-group">
+                                        <label for="proc-transfer-from">Source Account</label>
+                                        <select class="form-control" id="proc-transfer-from" required>
+                                            <!-- Dynamically filled -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="proc-transfer-to">Destination Account</label>
+                                        <select class="form-control" id="proc-transfer-to" required>
+                                            <!-- Dynamically filled -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="proc-transfer-amount">Amount (₹)</label>
+                                        <input type="number" class="form-control" id="proc-transfer-amount" min="1" step="0.01" placeholder="e.g. 5000" required>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                                        <i class="fas fa-exchange-alt"></i> Execute Transfer
+                                    </button>
+                                </form>
+
+                                <div class="trigger-indicator-card" id="proc-transfer-output" style="display: none; margin-top: 16px;">
+                                    <!-- Procedure Execution Console output -->
+                                </div>
+                            </div>
+
+                            <!-- Procedure 2 Card -->
+                            <div class="glass-card">
+                                <div class="card-title">
+                                    <span>Procedure: Calculate Interest</span>
+                                    <span class="query-badge" style="background:rgba(139, 92, 246,0.15); color:var(--accent-purple);">STORED PROC</span>
+                                </div>
+                                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px; line-height: 1.4;">
+                                    Loops through all accounts and adds a monthly interest of 2% (balance * 0.02) specifically to accounts with type 'Savings'.
+                                </p>
+                                
+                                <button class="btn btn-primary" id="proc-interest-btn" style="width:100%; justify-content:center;">
+                                    <i class="fas fa-percent"></i> Run Monthly Savings Interest Calculation
+                                </button>
+
+                                <div id="proc-interest-output-container" style="display: none; margin-top: 16px;">
+                                    <div class="card-title" style="font-size:0.9rem; margin-bottom:8px; color: var(--accent-success);">
+                                        <i class="fas fa-check-double"></i> Success: Interest Applied
+                                    </div>
+                                    <div class="table-container" style="max-height: 180px; overflow-y:auto;">
+                                        <table class="db-table" style="font-size:0.8rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>ACCOUNT ID</th>
+                                                    <th>TYPE</th>
+                                                    <th>PRE-INTEREST</th>
+                                                    <th>RATE</th>
+                                                    <th>NEW BALANCE</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="interest-table-body">
+                                                <!-- Dynamic comparison rows -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Triggers Console Panel -->
+                        <div class="proc-section">
+                            <div class="glass-card">
+                                <div class="card-title">
+                                    <span>Trigger Testing Sandbox</span>
+                                    <span class="query-badge" style="background:rgba(6, 182, 212,0.15); color:var(--accent-cyan);">TRIGGERS</span>
+                                </div>
+                                
+                                <div class="trigger-indicator-card" style="margin-top: 0; margin-bottom: 20px;">
+                                    <div class="trigger-title">
+                                        <i class="fas fa-shield-alt"></i> Trigger 1: MinimumBalanceCheck
+                                    </div>
+                                    <div class="trigger-desc">
+                                        Fires <strong>BEFORE INSERT ON Transaction</strong>. If the transaction type is 'Withdrawal' and the resulting account balance falls below <strong>₹1,000</strong>, it aborts the operation and throws a customized SQL error state.
+                                    </div>
+                                </div>
+
+                                <div class="trigger-indicator-card" style="margin-top: 0; margin-bottom: 20px;">
+                                    <div class="trigger-title">
+                                        <i class="fas fa-sync"></i> Trigger 2: UpdateBalanceAfterTransaction
+                                    </div>
+                                    <div class="trigger-desc">
+                                        Fires <strong>AFTER INSERT ON Transaction</strong>. Automatically updates the parent Account's balance field based on transaction type (adds on Deposit, subtracts on Withdrawal).
+                                    </div>
+                                </div>
+
+                                <form id="trigger-test-form">
+                                    <div class="form-group">
+                                        <label for="trigger-tx-account">Select Target Account</label>
+                                        <select class="form-control" id="trigger-tx-account" required>
+                                            <!-- Dynamically filled -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="trigger-tx-type">Transaction Type</label>
+                                        <select class="form-control" id="trigger-tx-type" required>
+                                            <option value="Withdrawal">Withdrawal (Triggers balance subtraction & minimum check)</option>
+                                            <option value="Deposit">Deposit (Triggers balance addition)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="trigger-tx-amount">Amount (₹)</label>
+                                        <input type="number" class="form-control" id="trigger-tx-amount" min="1" step="0.01" placeholder="e.g. 10000" required>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px;">
+                                        <i class="fas fa-play"></i> Run Transaction Insert & Fire Triggers
+                                    </button>
+                                </form>
+
+                                <div class="trigger-indicator-card" id="trigger-test-output" style="display: none; margin-top: 16px;">
+                                    <!-- Dynamic trigger visual log -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: SQL CONSOLE -->
+                <section class="view-section" id="terminal">
+                    <div class="console-layout">
+                        <!-- SQL Query Text Box -->
+                        <div class="terminal-editor">
+                            <div class="editor-header">
+                                <span>Interactive Query Editor (Raw SQL Simulator)</span>
+                                <div>
+                                    <button class="btn btn-secondary" id="clear-logs-btn" style="padding: 4px 10px; font-size: 0.75rem;">
+                                        <i class="fas fa-eraser"></i> Clear Terminal logs
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea class="sql-input-area" id="raw-sql-input" placeholder="Type SQL queries here... (e.g. SELECT * FROM Account WHERE balance > 60000; or CALL CalculateInterest();)"></textarea>
+                            <div style="background: rgba(0,0,0,0.1); border-top: 1px solid var(--border-glass); padding: 8px 16px; display: flex; justify-content: flex-end;">
+                                <button class="btn btn-primary" id="run-sql-btn">
+                                    <i class="fas fa-play"></i> Execute SQL Statement
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Scrolling Console Output -->
+                        <div class="terminal-logs-wrapper">
+                            <div class="logs-header">
+                                <span>SQL Execution Logs & Output Terminal</span>
+                                <span style="font-size:0.8rem; color:var(--accent-cyan); font-family:var(--font-mono);">mysql></span>
+                            </div>
+                            <div class="logs-content" id="logs-content">
+                                <!-- Log entries -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (Add Row Forms) -->
+    <div class="modal-overlay" id="row-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Insert Record into <span id="modal-table-title" style="color: var(--accent-cyan);">Customer</span></span>
+                <span class="modal-close" id="modal-close">&times;</span>
+            </div>
+            <form id="modal-form">
+                <div id="modal-fields-container">
+                    <!-- Fields dynamically created by script -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Insert Row</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Center -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ChartJS and App Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="db_simulator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
