@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const customers = window.db.tables.Customer;
         const loans = window.db.tables.Loan;
 
-        const totalDeposits = accounts.reduce((sum, a) => sum + a.balance, 0);
+        const totalDeposits = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
         const customerCount = customers.length;
         const accountCount = accounts.length;
         const activeLoanCount = loans.filter(l => l.status === 'Approved').length;
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         window.db.tables.Account.forEach(a => {
             if (branchData[a.branch_id]) {
-                branchData[a.branch_id].balance += a.balance;
+                branchData[a.branch_id].balance += Number(a.balance);
                 branchData[a.branch_id].count++;
             }
         });

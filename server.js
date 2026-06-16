@@ -48,7 +48,8 @@ async function initializeDatabase() {
         password: '1289',
         database: 'banking_system',
         multipleStatements: true,
-        connectionLimit: 10
+        connectionLimit: 10,
+        decimalNumbers: true
     });
 
     // Check if tables already exist. If Customer exists, we assume database is initialized
@@ -73,7 +74,7 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS Customer (
                 customer_id INT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
-                phone VARCHAR(15) NOT NULL,
+                phone VARCHAR(15) UNIQUE NOT NULL,
                 address VARCHAR(255) NOT NULL
             );
 
@@ -335,8 +336,16 @@ app.post('/api/table/:tableName', async (req, res) => {
         await logSQL(conn, sqlText, 'SUCCESS');
         res.json({ success: true });
     } catch (err) {
-        await logSQL(conn, sqlText, 'ERROR', err.message);
-        res.status(400).json({ success: false, error: err.message });
+        let errorMsg = err.message;
+        if (err.code === 'ER_DUP_ENTRY') {
+            if (err.message.toLowerCase().includes("phone")) {
+                errorMsg = "A customer with this phone number already exists.";
+            } else {
+                errorMsg = "Duplicate entry: a record with this primary key or unique constraint already exists.";
+            }
+        }
+        await logSQL(conn, sqlText, 'ERROR', errorMsg);
+        res.status(400).json({ success: false, error: errorMsg });
     } finally {
         conn.release();
     }

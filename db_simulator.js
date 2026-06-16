@@ -26,7 +26,23 @@ class BankingDB {
             const res = await fetch(`${this.baseUrl}/data`);
             const data = await res.json();
             if (data.success) {
-                this.tables = data.tables;
+                // Ensure all numeric fields like balance and amount are numbers on the frontend
+                const tables = data.tables;
+                for (const tableName in tables) {
+                    if (Array.isArray(tables[tableName])) {
+                        tables[tableName] = tables[tableName].map(row => {
+                            const newRow = { ...row };
+                            if (newRow.balance !== undefined && newRow.balance !== null) {
+                                newRow.balance = Number(newRow.balance);
+                            }
+                            if (newRow.amount !== undefined && newRow.amount !== null) {
+                                newRow.amount = Number(newRow.amount);
+                            }
+                            return newRow;
+                        });
+                    }
+                }
+                this.tables = tables;
                 this.sqlLogs = data.sqlLogs;
             } else {
                 console.error("Failed to fetch database state:", data.error);
